@@ -6,8 +6,9 @@ class ImageCard extends React.Component {
     this.state = { spans: 0 };
     this.imageRef = React.createRef();
   }
+
   componentDidMount() {
-    this.imageRef.current.addEventListener("load", this.SetSpans);
+    this.imageRef.current.addEventListener("load", this.setSpans);
   }
   setSpans = () => {
     console.log("In setSpan ");
@@ -15,6 +16,7 @@ class ImageCard extends React.Component {
     const spans = Math.ceil(height / 10);
     this.setState({ spans });
   };
+
   render() {
     const { description, urls } = this.props.image;
     return (

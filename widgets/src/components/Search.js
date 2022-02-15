@@ -2,8 +2,19 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 const Search = () => {
   const [term, setTerm] = useState("flower");
-  const [results, setResult] = useState([]);
-  console.log(results);
+  const [results, setResults] = useState([]);
+  const [debouncedTerm, setDebouncedTerm] = useState(term);
+
+  useEffect(() => {
+    const timerId = setTimeout(() => {
+      setDebouncedTerm(term);
+    }, 1000);
+
+    return () => {
+      clearTimeout(timerId);
+    };
+  }, [term]);
+
   useEffect(() => {
     const search = async () => {
       const { data } = await axios.get("https://en.wikipedia.org/w/api.php", {
@@ -12,20 +23,16 @@ const Search = () => {
           list: "search",
           origin: "*",
           format: "json",
-          srsearch: term,
+          srsearch: debouncedTerm,
         },
       });
-      setResult(data.query.search);
+
+      setResults(data.query.search);
     };
-    const timeoutId = setTimeout(() => {
-      if (term) {
-        search();
-      }
-    }, 500);
-    return () => {
-      clearTimeout(timeoutId);
-    };
-  }, [term]);
+    if (debouncedTerm) {
+      search();
+    }
+  }, [debouncedTerm]);
 
   const renderedResults = results.map((result) => {
     return (

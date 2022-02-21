@@ -21,7 +21,6 @@ class PostList extends React.Component {
         </div>
       );
     });
-    console.log(listMap);
     return listMap;
   }
   render() {

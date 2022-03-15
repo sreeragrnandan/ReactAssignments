@@ -11,13 +11,13 @@ function App() {
       <h1>Auto suggestion Div</h1>
       <AutocompleteDiv
         suggestions={[
-          "Alligator",
-          "Bask",
-          "Crocodilian",
-          "Death Roll",
-          "Eggs",
-          "Jaws",
-          "Reptile",
+          "TotalCurrentRatio",
+          "NetAsset",
+          "IntangibleAssests",
+          "Inventory",
+          "TotalCurrentLiability",
+          "NetPayment",
+          "InvoiceDate",
           "Solitary",
           "Tail",
           "Wetlands",
@@ -27,13 +27,13 @@ function App() {
       <h1>Auto suggestion</h1>
       <Autocomplete
         suggestions={[
-          "Alligator",
-          "Bask",
-          "Crocodilian",
-          "Death Roll",
-          "Eggs",
-          "Jaws",
-          "Reptile",
+          "TotalCurrentRatio",
+          "NetAsset",
+          "IntangibleAssests",
+          "Inventory",
+          "TotalCurrentLiability",
+          "NetPayment",
+          "InvoiceDate",
           "Solitary",
           "Tail",
           "Wetlands",

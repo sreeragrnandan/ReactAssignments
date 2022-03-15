@@ -46,33 +46,93 @@ function AutocompleteDiv({ suggestions }: { suggestions: Array<string> }) {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [editable, setEditable] = useState<HTMLElement | null>(null);
   const inputAreaRef = useRef<HTMLDivElement>(null);
+  const alllowedOperstions = ["+", "-", "(", ")", "*", "^", "%", "/"];
   // let searchTerm: string;
   let savedCaretPosition: {
     start: number;
     end: number;
   };
 
-  const onChangeHandler = (event: React.ChangeEvent<HTMLDivElement>) => {
+  const onChangeHandler = (e: React.ChangeEvent<HTMLDivElement>) => {
     console.log("onChange suggestions", suggestions);
     if (inputAreaRef.current) {
-      console.log("onChangeHandler", event);
-      savedCaretPosition = CaretPositioning.saveSelection(event.currentTarget);
+      console.log("onChangeHandler ", e);
+      savedCaretPosition = CaretPositioning.saveSelection(e.currentTarget);
       setCaretPosition(savedCaretPosition);
       const userInp = inputAreaRef.current.innerText;
       const searchArea = userInp.slice(0, savedCaretPosition.end);
+      console.log("searchArea", searchArea[searchArea.length - 1]);
+
+      // For operators
+      if (
+        alllowedOperstions.includes(searchArea[searchArea.length - 1]) &&
+        searchArea[searchArea.length - 1] !==
+          conformedSuggestion[savedCaretPosition.end - 1]
+      ) {
+        let value: string;
+        let val: string;
+        savedCaretPosition = CaretPositioning.saveSelection(e.currentTarget);
+        if (conformedSuggestion.length === 0) {
+          val = "";
+        } else {
+          val = conformedSuggestion;
+        }
+        console.log(
+          "conformedSuggestion.length",
+          conformedSuggestion.length,
+          "savedCaretPosition.end ",
+          savedCaretPosition.end
+        );
+        if (savedCaretPosition.end === 0 || savedCaretPosition.end === 1) {
+          value = searchArea[searchArea.length - 1] + conformedSuggestion;
+        } else if (
+          conformedSuggestion.length > savedCaretPosition.end &&
+          conformedSuggestion.length > 0
+        ) {
+          value =
+            conformedSuggestion.slice(0, savedCaretPosition.end - 1) +
+            searchArea[searchArea.length - 1] +
+            conformedSuggestion.slice(savedCaretPosition.end - 1);
+        } else {
+          value = val + searchArea[searchArea.length - 1];
+        }
+        setConformedSuggestion(value);
+        setCaretPosition(savedCaretPosition);
+        setContentWidth(
+          (measureText(value, "16", null).width + 8).toString() + "px"
+        );
+        console.log(
+          "conformedSuggestion",
+          value,
+          "savedCaretPosition.end ",
+          savedCaretPosition.end
+        );
+      }
       var inputArray = searchArea.split(/\W+/g);
       console.log("inputArray ", inputArray);
       var srhTerm: string;
       setSearchTerm(inputArray[inputArray.length - 1]);
       srhTerm = inputArray[inputArray.length - 1];
+
+      // If user delets characters from input
       if (conformedSuggestion.length > userInp.length) {
-        if (!suggestions.includes(srhTerm)) {
-          setConformedSuggestion(userInp.replace(" " + srhTerm, ""));
+        if (
+          !suggestions.includes(srhTerm) &&
+          !alllowedOperstions.includes(searchTerm)
+        ) {
+          setConformedSuggestion(userInp.replace(srhTerm, ""));
         } else {
           setConformedSuggestion(userInp);
         }
         setContentWidth(
           measureText(userInp, "16", null).width.toString() + "px"
+        );
+      }
+
+      //If cursour moved to the left
+      if (conformedSuggestion.length > searchArea.length) {
+        setContentWidth(
+          measureText(searchArea, "16", null).width.toString() + "px"
         );
       }
       // Filter our suggestions that don't contain the user's input
@@ -104,13 +164,19 @@ function AutocompleteDiv({ suggestions }: { suggestions: Array<string> }) {
     inputAreaRef.current?.focus();
   }, [inputAreaRef.current?.innerText]);
 
+  // Onkeyboard action
   if (inputAreaRef.current != null) {
     inputAreaRef.current.onkeydown = function (e) {
       var value;
       e = e || window.event;
 
-      console.log("keyEvent ", e.key);
       savedCaretPosition = CaretPositioning.saveSelection(e.currentTarget);
+      console.log(
+        "keyEvent ",
+        e.key,
+        "savedCaretPosition.end from keypress: ",
+        savedCaretPosition.end
+      );
       console.log("onKeyHandler ", savedCaretPosition);
       console.log(
         "conformedSuggestion.length",
@@ -118,6 +184,7 @@ function AutocompleteDiv({ suggestions }: { suggestions: Array<string> }) {
         "savedCaretPosition.end ",
         savedCaretPosition.end
       );
+
       // User pressed the enter key
       if (e.key === "Escape") {
         if (showSuggestions) {
@@ -127,33 +194,27 @@ function AutocompleteDiv({ suggestions }: { suggestions: Array<string> }) {
         }
       }
       if (e.key === "Enter" && userInput.length > 0) {
+        e.preventDefault();
         var val;
         if (conformedSuggestion.length === 0) {
           val = "";
         } else {
-          val = conformedSuggestion + " ";
+          val = conformedSuggestion;
         }
-        console.log(
-          "conformedSuggestion.length",
-          conformedSuggestion.length,
-          "savedCaretPosition.end ",
-          savedCaretPosition.end
-        );
         if (
           conformedSuggestion.length > savedCaretPosition.end &&
           conformedSuggestion.length > 0
         ) {
-          console.log("Value in block", value);
           value =
             conformedSuggestion.slice(
               0,
               savedCaretPosition.end - searchTerm.length
             ) +
-            " " +
             filteredSuggestions[activeSuggestion] +
             conformedSuggestion.slice(
               savedCaretPosition.end - searchTerm.length
             );
+          console.log("Value in block", value);
         } else {
           value = val + filteredSuggestions[activeSuggestion];
         }
@@ -166,8 +227,7 @@ function AutocompleteDiv({ suggestions }: { suggestions: Array<string> }) {
         );
         savedCaretPosition.end =
           savedCaretPosition.end +
-          (filteredSuggestions[activeSuggestion].length - searchTerm.length) +
-          1;
+          (filteredSuggestions[activeSuggestion].length - searchTerm.length);
         if (savedCaretPosition.end > value.length) {
           savedCaretPosition.end = value.length;
         }
@@ -184,6 +244,7 @@ function AutocompleteDiv({ suggestions }: { suggestions: Array<string> }) {
         setContentWidth(
           (measureText(value, "16", null).width + 8).toString() + "px"
         );
+        setSearchTerm("");
       }
       // User pressed the up arrow
       else if (e.key === "ArrowUp") {
@@ -206,6 +267,7 @@ function AutocompleteDiv({ suggestions }: { suggestions: Array<string> }) {
         }
         setActiveSuggestion(activeSuggestion + 1);
       }
+      setCaretPosition(savedCaretPosition);
     };
   }
 
@@ -219,7 +281,7 @@ function AutocompleteDiv({ suggestions }: { suggestions: Array<string> }) {
     if (conformedSuggestion.length === 0) {
       val = "";
     } else {
-      val = conformedSuggestion + " ";
+      val = conformedSuggestion;
     }
     var value = val + e.currentTarget.innerText;
     setConformedSuggestion(val + e.currentTarget.innerText);
@@ -245,27 +307,14 @@ function AutocompleteDiv({ suggestions }: { suggestions: Array<string> }) {
     }
   };
   const renderUserInput = (input: string) => {
-    // inputAreaRef.current?.focus();
-    // setCaret();
+    // for (input.split(/(\W)/g)){
+    //   a
+    // }
     return input === "undefined" ? "" : input;
   };
 
-  // var sel = window.getSelection();
-  // console.log("sel ", inputAreaRef.current);
-  // if (inputAreaRef.current != null && sel != null && userInput.length > 0) {
-  //   // var el = document.getElementById("editable")
-  //   var range = document.createRange();
-
-  //   range.setStart(inputAreaRef.current.childNodes[0], caretPosition.end);
-  //   range.collapse(true);
-
-  //   sel.removeAllRanges();
-  //   sel.addRange(range);
-  // }
-
   const renderSuggestionsList = () => {
     let suggestionsListComponent;
-
     if (showSuggestions && userInput) {
       //   console.log("userInput", userInput);
       if (filteredSuggestions.length) {
@@ -313,11 +362,8 @@ function AutocompleteDiv({ suggestions }: { suggestions: Array<string> }) {
         className="input"
         ref={inputAreaRef}
       >
-        {/* {userInput} */}
-        {/* {userInput.length === 0 ? setUserInput("") : ""} */}
         {renderUserInput(userInput)}
       </div>
-      {/* {setCaret()} */}
       {renderSuggestionsList()}
       <button type="button" onClick={onClickButton}>
         Submit
@@ -325,7 +371,6 @@ function AutocompleteDiv({ suggestions }: { suggestions: Array<string> }) {
       <button id="button" onClick={setCaret}>
         focus
       </button>
-      {/* {setCaret()} */}
     </Fragment>
   );
 }

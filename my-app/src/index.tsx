@@ -11,6 +11,9 @@ function App() {
       <h1>Auto suggestion Div</h1>
       <AutocompleteDiv
         suggestions={[
+          "a",
+          "b",
+          "c",
           "TotalCurrentRatio",
           "NetAsset",
           "IntangibleAssests",

@@ -1,7 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { List, ListItem } from "@mui/material";
+import { Chip, Grid, List, ListItem } from "@mui/material";
 import React, { Fragment, useEffect, useRef, useState } from "react";
 import CaretPositioning from "./EditCaretPositioning";
+import setCaret from "./setCaret";
 
 function measureText(
   pText: string | null,
@@ -47,6 +48,8 @@ function AutocompleteDiv({ suggestions }: { suggestions: Array<string> }) {
   const [editable, setEditable] = useState<HTMLElement | null>(null);
   const inputAreaRef = useRef<HTMLDivElement>(null);
   const alllowedOperstions = ["+", "-", "(", ")", "*", "^", "%", "/"];
+  let renderOutput: (string | JSX.Element)[];
+
   // let searchTerm: string;
   let savedCaretPosition: {
     start: number;
@@ -158,10 +161,12 @@ function AutocompleteDiv({ suggestions }: { suggestions: Array<string> }) {
   useEffect(() => {
     setEditable(inputAreaRef.current);
     console.log("UE editable", editable, inputAreaRef.current);
+    document.getElementById("12357")?.focus();
   }, []);
   useEffect(() => {
-    setCaret();
-    inputAreaRef.current?.focus();
+    // setCaret(inputAreaRef, caretPosition);
+    // inputAreaRef.current?.focus();
+    document.getElementById("12357")?.focus();
   }, [inputAreaRef.current?.innerText]);
 
   // Onkeyboard action
@@ -293,24 +298,40 @@ function AutocompleteDiv({ suggestions }: { suggestions: Array<string> }) {
       (measureText(userInput, "16", null).width + 8).toString() + "px"
     );
   };
-  const setCaret = () => {
-    var el = inputAreaRef.current;
-    var range = document.createRange();
-    var sel = window.getSelection();
-    if (el !== null && sel !== null && el.innerText.length > 0) {
-      range.setStart(el.childNodes[0], caretPosition.end);
-      range.collapse(true);
-      console.log("setCaret ", caretPosition.end);
-      sel.removeAllRanges();
-      sel.addRange(range);
-      el.focus();
-    }
+  const handleClick = () => {
+    console.info("You clicked the Chip.");
   };
   const renderUserInput = (input: string) => {
-    // for (input.split(/(\W)/g)){
-    //   a
-    // }
-    return input === "undefined" ? "" : input;
+    // return input;
+    if (input.length !== 0) {
+      renderOutput = input.split(/(\W+)/g).map((value, index) => {
+        if (
+          conformedSuggestion.split(/(\W+)/g).includes(value) &&
+          !alllowedOperstions.includes(value) &&
+          value !== " "
+        ) {
+          // return <Chip key={index} label={value} onClick={handleClick} />;
+          return (
+            <Chip
+              key={index}
+              label={value}
+              onClick={handleClick}
+              variant="outlined"
+            />
+          );
+        } else {
+          return value;
+        }
+      });
+      renderOutput.push(
+        <div id="12357" key="1235">
+          {" "}
+        </div>
+      );
+    } else {
+      return "";
+    }
+    return renderOutput;
   };
 
   const renderSuggestionsList = () => {
@@ -353,22 +374,25 @@ function AutocompleteDiv({ suggestions }: { suggestions: Array<string> }) {
 
   return (
     <Fragment>
-      <div
-        id="inputDiv"
-        suppressContentEditableWarning={true}
-        placeholder="Please enter formula"
-        contentEditable="true"
-        onInput={onChangeHandler}
-        className="input"
-        ref={inputAreaRef}
-      >
-        {renderUserInput(userInput)}
+      <div>
+        <Grid
+          direction={"row"}
+          id="inputDiv"
+          suppressContentEditableWarning={true}
+          placeholder="Please enter formula"
+          contentEditable="true"
+          onInput={onChangeHandler}
+          className="input"
+          ref={inputAreaRef}
+        >
+          {renderUserInput(userInput)}
+        </Grid>
       </div>
       {renderSuggestionsList()}
       <button type="button" onClick={onClickButton}>
         Submit
       </button>
-      <button id="button" onClick={setCaret}>
+      <button id="button" onClick={() => setCaret(inputAreaRef, caretPosition)}>
         focus
       </button>
     </Fragment>

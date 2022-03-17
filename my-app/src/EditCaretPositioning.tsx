@@ -19,7 +19,9 @@ if (window.getSelection && document.createRange) {
 
   // let saveSelection, restoreSelection;
   EditCaretPositioning.restoreSelection = function (
-    containerEl: HTMLDivElement,
+    // containerEl: (EventTarget & HTMLDivElement) & Node,
+    containerEl: any,
+
     savedSel: {
       start: number;
       end: number;

@@ -72,3 +72,36 @@
 //   //   }
 // }
 //   console.log("inputAreaRef.current ", inputAreaRef.current);
+
+const renderUserInput = (input: string) => {
+  console.log("conformedSuggestion from renderInput ", conformedSuggestion);
+  renderOutput = [];
+
+  if (input.length !== 0 && conformedSuggestion.length !== 0) {
+    // input = " " + input;
+    let renderOutput: (string | JSX.Element | undefined)[];
+    renderOutput = input.split(/(\W+)/g).map((value, index) => {
+      if (
+        conformedSuggestion.split(/(\W+)/g).includes(value) &&
+        !alllowedOperstions.includes(value) &&
+        value !== " "
+      ) {
+        return (
+          <Chip
+            id={"chip-id-" + index}
+            key={"chip-key-" + index}
+            label={value}
+            variant="outlined"
+          />
+        );
+      } else if (input.length !== 0 && conformedSuggestion.length === 0) {
+        return value !== " " ? value : "";
+      } else {
+        return "";
+      }
+    });
+    return renderOutput;
+  } else {
+    return "";
+  }
+};

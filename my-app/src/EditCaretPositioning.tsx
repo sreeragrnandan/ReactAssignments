@@ -2,9 +2,9 @@ const EditCaretPositioning: any = {};
 // let saveSelection, restoreSelection;
 export default EditCaretPositioning;
 if (window.getSelection && document.createRange) {
-  EditCaretPositioning.saveSelection = function (
+  EditCaretPositioning.saveSelection = (
     containerEl: EventTarget & HTMLDivElement
-  ) {
+  ) => {
     var range = window.getSelection()!.getRangeAt(0);
     var preSelectionRange = range.cloneRange();
     preSelectionRange.selectNodeContents(containerEl);

@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Chip, Grid, List, ListItem } from "@mui/material";
+import { color } from "@mui/system";
 import React, { Fragment, useEffect, useRef, useState } from "react";
 import CaretPositioning from "./EditCaretPositioning";
 import setCaret from "./setCaret";
@@ -9,7 +10,6 @@ function measureText(
   pFontSize: string,
   pStyle: CSSStyleDeclaration | null
 ) {
-  console.log("pText ", pText);
   var lDiv = document.createElement("div");
 
   document.body.appendChild(lDiv);
@@ -46,11 +46,10 @@ function AutocompleteDiv({ suggestions }: { suggestions: Array<string> }) {
   const [caretPosition, setCaretPosition] = useState({ start: 0, end: 0 });
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [editable, setEditable] = useState<HTMLElement | null>(null);
-  const [targetDiv, setTargetDiv] = useState<HTMLElement | null>(null);
+  // const [targetDiv, setTargetDiv] = useState<HTMLElement | null>(null);
   const inputAreaRef = useRef<HTMLDivElement>(null);
   const alllowedOperstions = ["+", "-", "(", ")", "*", "^", "%", "/"];
-  let renderOutput: (string | JSX.Element)[];
-  renderOutput = [];
+  let renderOutput: (string | JSX.Element | HTMLSpanElement | undefined)[];
 
   // let searchTerm: string;
   let savedCaretPosition: {
@@ -59,22 +58,21 @@ function AutocompleteDiv({ suggestions }: { suggestions: Array<string> }) {
   };
 
   const onChangeHandler = (e: React.ChangeEvent<HTMLDivElement>) => {
-    console.log("onChange suggestions", suggestions);
-    if (
-      inputAreaRef.current &&
-      inputAreaRef.current.firstChild &&
-      inputAreaRef.current.firstChild.nodeValue
-    ) {
-      console.log("onChangeHandler ", inputAreaRef.current.innerText);
+    if (inputAreaRef.current && inputAreaRef.current.firstChild) {
       savedCaretPosition = CaretPositioning.saveSelection(e.currentTarget);
-      if (!targetDiv) {
-        setTargetDiv(e.currentTarget);
-      }
+
       setCaretPosition(savedCaretPosition);
-      // const userInp = inputAreaRef.current.innerText;
+
       const userInp = inputAreaRef.current.innerText;
+
+      // const userInp = inputAreaRef.current.innerText;
       const searchArea = userInp.slice(0, savedCaretPosition.end);
-      console.log("searchArea: ", searchArea);
+      console.log(
+        "onChangeHandler ",
+        inputAreaRef.current.innerText,
+        "searchArea: ",
+        searchArea
+      );
 
       // For operators
       if (
@@ -90,12 +88,7 @@ function AutocompleteDiv({ suggestions }: { suggestions: Array<string> }) {
         } else {
           val = conformedSuggestion;
         }
-        console.log(
-          "conformedSuggestion.length",
-          conformedSuggestion.length,
-          "savedCaretPosition.end ",
-          savedCaretPosition.end
-        );
+
         if (savedCaretPosition.end === 0 || savedCaretPosition.end === 1) {
           value = searchArea[searchArea.length - 1] + conformedSuggestion;
         } else if (
@@ -122,7 +115,6 @@ function AutocompleteDiv({ suggestions }: { suggestions: Array<string> }) {
         );
       }
       var inputArray = searchArea.split(/\W+/g);
-      console.log("inputArray ", inputArray);
       var srhTerm: string;
       setSearchTerm(inputArray[inputArray.length - 1]);
       srhTerm = inputArray[inputArray.length - 1];
@@ -157,21 +149,12 @@ function AutocompleteDiv({ suggestions }: { suggestions: Array<string> }) {
       setFilteredSuggestions(currSuggestions);
       setShowSuggestions(true);
       setUserInput(inputAreaRef.current.innerText);
-      console.log(
-        "measureText ",
-        measureText(
-          inputAreaRef.current.innerText,
-          "16",
-          inputAreaRef.current.style
-        ).width
-      );
     }
   };
 
   useEffect(() => {
     setEditable(inputAreaRef.current);
     console.log("UE editable", editable, inputAreaRef.current);
-    // document.getElementById("12357")?.focus();
   }, []);
   useEffect(() => {
     console.log(
@@ -181,6 +164,106 @@ function AutocompleteDiv({ suggestions }: { suggestions: Array<string> }) {
       inputAreaRef.current?.childNodes.length
     );
   }, [inputAreaRef.current?.innerText]);
+
+  let ueCaretPosition = {
+    start: 0,
+    end: 0,
+  };
+  useEffect(() => {
+    const handleUserKeyPress = (e: any) => {
+      console.log("enter press here! ", e.key, "e.target ", e.target);
+      var value;
+      e = e || window.event;
+
+      ueCaretPosition = CaretPositioning.saveSelection(e.currentTarget);
+      console.log(
+        "keyEvent ",
+        e.key,
+        "ueCaretPosition.end from keypress: ",
+        ueCaretPosition.end
+      );
+
+      // User pressed the enter key
+      if (e.key === "Escape") {
+        if (showSuggestions) {
+          setShowSuggestions(false);
+        } else if (!showSuggestions) {
+          inputAreaRef.current?.blur();
+        }
+      }
+      if (e.key === "Enter" && userInput.length > 0) {
+        e.preventDefault();
+        var val;
+        if (conformedSuggestion.length === 0) {
+          val = "";
+        } else {
+          val = conformedSuggestion;
+        }
+        if (
+          conformedSuggestion.length > ueCaretPosition.end &&
+          conformedSuggestion.length > 0
+        ) {
+          value =
+            conformedSuggestion.slice(
+              0,
+              ueCaretPosition.end - searchTerm.length
+            ) +
+            filteredSuggestions[activeSuggestion] +
+            conformedSuggestion.slice(ueCaretPosition.end - searchTerm.length);
+        } else {
+          value = val + filteredSuggestions[activeSuggestion];
+        }
+
+        console.log(
+          "Value ",
+          value,
+          "ueCaretPosition.end from enter: ",
+          ueCaretPosition.end
+        );
+        ueCaretPosition.end =
+          ueCaretPosition.end +
+          (filteredSuggestions[activeSuggestion].length - searchTerm.length);
+        if (ueCaretPosition.end > value.length) {
+          ueCaretPosition.end = value.length;
+        }
+
+        setConformedSuggestion(value);
+        setActiveSuggestion(0);
+        setShowSuggestions(false);
+        setUserInput(value);
+        setContentWidth(
+          (measureText(value, "16", null).width + 8).toString() + "px"
+        );
+        setSearchTerm("");
+      }
+      // User pressed the up arrow
+      else if (e.key === "ArrowUp") {
+        if (showSuggestions) {
+          e.preventDefault();
+        }
+        if (activeSuggestion === 0) {
+          setShowSuggestions(false);
+          return;
+        }
+        setActiveSuggestion(activeSuggestion - 1);
+      }
+      // User pressed the down arrow
+      else if (e.key === "ArrowDown") {
+        if (showSuggestions) {
+          e.preventDefault();
+        }
+        console.log("from ArrowDown");
+        if (activeSuggestion - 1 === filteredSuggestions.length) {
+          return;
+        }
+        setActiveSuggestion(activeSuggestion + 1);
+      }
+      setCaretPosition(ueCaretPosition);
+    };
+    document?.addEventListener("keydown", handleUserKeyPress);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeSuggestion]);
 
   const onClickButton = () => {
     console.log("conformedSuggestionButton: " + userInput);
@@ -204,41 +287,9 @@ function AutocompleteDiv({ suggestions }: { suggestions: Array<string> }) {
       (measureText(userInput, "16", null).width + 8).toString() + "px"
     );
   };
-  const handleClick = () => {
-    console.info("You clicked the Chip.");
-  };
-  const renderUserInput = (input: string) => {
-    console.log("conformedSuggestion from renderInput ", conformedSuggestion);
-    renderOutput = [];
-
-    if (input.length !== 0 && conformedSuggestion.length !== 0) {
-      // input = " " + input;
-      let renderOutput: (string | JSX.Element | undefined)[];
-      renderOutput = input.split(/(\W+)/g).map((value, index) => {
-        if (
-          conformedSuggestion.split(/(\W+)/g).includes(value) &&
-          !alllowedOperstions.includes(value) &&
-          value !== " "
-        ) {
-          return (
-            <Chip
-              id={"chip-id-" + index}
-              key={"chip-key-" + index}
-              label={value}
-              variant="outlined"
-            />
-          );
-        } else if (input.length !== 0 && conformedSuggestion.length === 0) {
-          return value !== " " ? value : "";
-        } else {
-          return "";
-        }
-      });
-      return renderOutput;
-    } else {
-      return "";
-    }
-  };
+  // const handleClick = () => {
+  //   console.info("You clicked the Chip.");
+  // };
 
   const renderSuggestionsList = () => {
     let suggestionsListComponent;
@@ -278,13 +329,31 @@ function AutocompleteDiv({ suggestions }: { suggestions: Array<string> }) {
     return suggestionsListComponent;
   };
   const focusEnd = () => {
-    CaretPositioning.restoreSelection(
-      document.getElementById("inputDiv"),
-      savedCaretPosition
-    );
+    var el = inputAreaRef.current;
+    el?.focus();
+    var range = document.createRange();
+    var sel = window.getSelection();
+    if (el && sel) {
+      console.log(
+        "focus caretPosition.end",
+        caretPosition,
+        "el.childNodes[0]",
+        el.childNodes[0]
+      );
+      range.setEnd(el.childNodes[1], caretPosition.end);
+      range.collapse(true);
+
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }
   };
   const handleKeyPress = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    console.log("enter press here! ", e.key);
+    console.log(
+      " from handle keyPress enter press here! ",
+      e.key,
+      "e.target ",
+      e.target
+    );
     var value;
     e = e || window.event;
 
@@ -363,6 +432,7 @@ function AutocompleteDiv({ suggestions }: { suggestions: Array<string> }) {
         (measureText(value, "16", null).width + 8).toString() + "px"
       );
       setSearchTerm("");
+      console.log("userInput from handleKeyPress ", value);
     }
     // User pressed the up arrow
     else if (e.key === "ArrowUp") {
@@ -380,6 +450,7 @@ function AutocompleteDiv({ suggestions }: { suggestions: Array<string> }) {
       if (showSuggestions) {
         e.preventDefault();
       }
+      console.log("from ArrowDown 123");
       if (activeSuggestion - 1 === filteredSuggestions.length) {
         return;
       }
@@ -387,32 +458,159 @@ function AutocompleteDiv({ suggestions }: { suggestions: Array<string> }) {
     }
     setCaretPosition(savedCaretPosition);
   };
+
+  const renderUserInput = (input: string) => {
+    renderOutput = [];
+
+    console.log(
+      "conformedSuggestionFromRenderInput ",
+      conformedSuggestion,
+      " userInputLog",
+      input
+    );
+    if (input.length !== 0 && conformedSuggestion.length !== 0) {
+      renderOutput = input.split(/(\W+)/g).map((value, index) => {
+        if (
+          conformedSuggestion.split(/(\W+)/g).includes(value) &&
+          !alllowedOperstions.includes(value) &&
+          value !== " " &&
+          value !== ""
+        ) {
+          return (
+            // <Chip
+            //   tabIndex={index}
+            //   id={"chip-id-" + index}
+            //   key={"chip-key-" + index}
+            //   label={value}
+            //   variant="outlined"
+            //   onKeyDown={handleKeyPress}
+            //   onKeyPress={handleKeyPress}
+            // />
+            <Grid
+              item
+              sx={{
+                color: "red",
+                border: "1px solid #999",
+                borderRadius: "10px",
+                marginRight: "5px",
+                padding: "3px",
+              }}
+            >
+              {value}
+            </Grid>
+          );
+        } else if (alllowedOperstions.includes(value)) {
+          return (
+            // <Chip
+            //   tabIndex={index}
+            //   id={"chip-id-" + index}
+            //   key={"chip-key-" + index}
+            //   label={value}
+            //   onKeyDown={handleKeyPress}
+            //   onKeyPress={handleKeyPress}
+            //   sx={{
+            //     border: "0px solid transparent",
+            //     paddingLeft: "0px",
+            //     paddingRight: "0px",
+            //   }}
+            //   variant="outlined"
+            // />
+            <Grid
+              item
+              sx={{
+                color: "red",
+                marginRight: "5px",
+                padding: "3px",
+              }}
+            >
+              {value}
+            </Grid>
+          );
+        } else {
+          // eslint-disable-next-line array-callback-return
+          return;
+        }
+      });
+      renderOutput.push(
+        // <Chip
+        //   id={"chip-id-lastIndex"}
+        //   key={"chip-key-lastIndex"}
+        //   onKeyDown={handleKeyPress}
+        //   onKeyPress={handleKeyPress}
+        //   tabIndex={0}
+        //   label={" "}
+        //   sx={{
+        //     border: "0px solid transparent",
+        //     paddingLeft: "0px",
+        //     paddingRight: "0px",
+        //     "& .css-6od3lo-MuiChip-label": {
+        //       paddingLeft: "0px",
+        //       paddingRight: "0px",
+        //     },
+        //   }}
+        //   variant="outlined"
+        // />
+        <Grid
+          item
+          id={"end-div-" + userInput.length}
+          sx={{
+            color: "red",
+            padding: "3px",
+          }}
+        >
+          &nbsp;
+        </Grid>
+      );
+      return renderOutput;
+    } else {
+      renderOutput = [];
+      renderOutput.push(
+        // <Chip
+        //   id={"chip-id-empty"}
+        //   key={"chip-key-empty"}
+        //   tabIndex={0}
+        //   onKeyDown={handleKeyPress}
+        //   onKeyPress={handleKeyPress}
+        //   label={" "}
+        //   sx={{ border: "0px solid transparent" }}
+        //   variant="outlined"
+        // />
+        <Grid item sx={{ color: "red" }}>
+          &nbsp;
+        </Grid>
+      );
+      return renderOutput;
+    }
+    // return input;
+  };
+
   return (
     <Fragment>
-      <div>
-        <Grid
-          direction={"row"}
-          id="inputDiv"
-          suppressContentEditableWarning={true}
-          placeholder="Please enter formula"
-          contentEditable="true"
-          onInput={onChangeHandler}
-          onKeyPress={handleKeyPress}
-          className="input"
-          ref={inputAreaRef}
-        >
-          {renderUserInput(userInput)}
-        </Grid>
-      </div>
+      <Grid
+        container
+        direction={"row"}
+        id="inputDiv"
+        suppressContentEditableWarning={true}
+        placeholder="Please enter formula"
+        // data-interception="off"
+        contentEditable={"true"}
+        onInput={onChangeHandler}
+        onKeyPress={handleKeyPress}
+        className="input"
+        ref={inputAreaRef}
+      >
+        {renderUserInput(userInput)}
+      </Grid>
+
       {renderSuggestionsList()}
       <button type="button" onClick={onClickButton}>
         Submit
       </button>
       <button id="button" onClick={() => setCaret(inputAreaRef, caretPosition)}>
-        setCaret
+        GetCaret
       </button>
       <button id="FoucsButton" onClick={() => focusEnd()}>
-        focusEnd
+        setCaret
       </button>
     </Fragment>
   );

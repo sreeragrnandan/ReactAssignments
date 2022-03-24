@@ -6,11 +6,12 @@ const setCaret = (
   }
 ) => {
   var el = inputAreaRef.current;
+  // var el = document.getElementById("parentDiv");
   var range = document.createRange();
   var sel = window.getSelection();
   if (el !== null && sel !== null && el.innerText.length > 0) {
     // range.setStart(el.childNodes[0], caretPosition.end);
-    range.setStart(el.childNodes[1], 5);
+    range.setStart(el, 4314);
     range.collapse(true);
     console.log("setCaret ", caretPosition.end);
     sel.removeAllRanges();

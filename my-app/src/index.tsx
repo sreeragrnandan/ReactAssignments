@@ -27,8 +27,8 @@ function App() {
         ]}
       />
 
-      <h1>Auto suggestion</h1>
-      <Autocomplete
+      {/* <h1>Auto suggestion</h1> */}
+      {/* <Autocomplete
         suggestions={[
           "TotalCurrentRatio",
           "NetAsset",
@@ -41,7 +41,7 @@ function App() {
           "Tail",
           "Wetlands",
         ]}
-      />
+      /> */}
     </div>
   );
 }

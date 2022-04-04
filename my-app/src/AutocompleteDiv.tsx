@@ -477,54 +477,54 @@ function AutocompleteDiv({ suggestions }: { suggestions: Array<string> }) {
           value !== ""
         ) {
           return (
-            // <Chip
-            //   tabIndex={index}
-            //   id={"chip-id-" + index}
-            //   key={"chip-key-" + index}
-            //   label={value}
-            //   variant="outlined"
-            //   onKeyDown={handleKeyPress}
-            //   onKeyPress={handleKeyPress}
-            // />
-            <Grid
-              item
-              sx={{
-                color: "red",
-                border: "1px solid #999",
-                borderRadius: "10px",
-                marginRight: "5px",
-                padding: "3px",
-              }}
-            >
-              {value}
-            </Grid>
+            <Chip
+              tabIndex={index}
+              id={"chip-id-" + index}
+              key={"chip-key-" + index}
+              label={value}
+              variant="filled"
+              onKeyDown={handleKeyPress}
+              onKeyPress={handleKeyPress}
+            />
+            // <Grid
+            //   item
+            //   sx={{
+            //     color: "red",
+            //     border: "1px solid #999",
+            //     borderRadius: "10px",
+            //     marginRight: "5px",
+            //     padding: "3px",
+            //   }}
+            // >
+            //   {value}
+            // </Grid>
           );
         } else if (alllowedOperstions.includes(value)) {
           return (
-            // <Chip
-            //   tabIndex={index}
-            //   id={"chip-id-" + index}
-            //   key={"chip-key-" + index}
-            //   label={value}
-            //   onKeyDown={handleKeyPress}
-            //   onKeyPress={handleKeyPress}
-            //   sx={{
-            //     border: "0px solid transparent",
-            //     paddingLeft: "0px",
-            //     paddingRight: "0px",
-            //   }}
-            //   variant="outlined"
-            // />
-            <Grid
-              item
+            <Chip
+              tabIndex={index}
+              id={"chip-id-" + index}
+              key={"chip-key-" + index}
+              label={value}
+              onKeyDown={handleKeyPress}
+              onKeyPress={handleKeyPress}
               sx={{
-                color: "red",
-                marginRight: "5px",
-                padding: "3px",
+                border: "0px solid transparent",
+                paddingLeft: "0px",
+                paddingRight: "0px",
               }}
-            >
-              {value}
-            </Grid>
+              variant="filled"
+            />
+            // <Grid
+            //   item
+            //   sx={{
+            //     color: "red",
+            //     marginRight: "5px",
+            //     padding: "3px",
+            //   }}
+            // >
+            //   {value}
+            // </Grid>
           );
         } else {
           // eslint-disable-next-line array-callback-return
@@ -532,52 +532,52 @@ function AutocompleteDiv({ suggestions }: { suggestions: Array<string> }) {
         }
       });
       renderOutput.push(
-        // <Chip
-        //   id={"chip-id-lastIndex"}
-        //   key={"chip-key-lastIndex"}
-        //   onKeyDown={handleKeyPress}
-        //   onKeyPress={handleKeyPress}
-        //   tabIndex={0}
-        //   label={" "}
-        //   sx={{
-        //     border: "0px solid transparent",
-        //     paddingLeft: "0px",
-        //     paddingRight: "0px",
-        //     "& .css-6od3lo-MuiChip-label": {
-        //       paddingLeft: "0px",
-        //       paddingRight: "0px",
-        //     },
-        //   }}
-        //   variant="outlined"
-        // />
-        <Grid
-          item
-          id={"end-div-" + userInput.length}
+        <Chip
+          id={"chip-id-lastIndex"}
+          key={"chip-key-lastIndex"}
+          onKeyDown={handleKeyPress}
+          onKeyPress={handleKeyPress}
+          tabIndex={0}
+          label={" "}
           sx={{
-            color: "red",
-            padding: "3px",
+            border: "0px solid transparent",
+            paddingLeft: "0px",
+            paddingRight: "0px",
+            "& .css-6od3lo-MuiChip-label": {
+              paddingLeft: "0px",
+              paddingRight: "0px",
+            },
           }}
-        >
-          &nbsp;
-        </Grid>
+          variant="outlined"
+        />
+        // <Grid
+        //   item
+        //   id={"end-div-" + userInput.length}
+        //   sx={{
+        //     color: "red",
+        //     padding: "3px",
+        //   }}
+        // >
+        //   &nbsp;
+        // </Grid>
       );
       return renderOutput;
     } else {
       renderOutput = [];
       renderOutput.push(
-        // <Chip
-        //   id={"chip-id-empty"}
-        //   key={"chip-key-empty"}
-        //   tabIndex={0}
-        //   onKeyDown={handleKeyPress}
-        //   onKeyPress={handleKeyPress}
-        //   label={" "}
-        //   sx={{ border: "0px solid transparent" }}
-        //   variant="outlined"
-        // />
-        <Grid item sx={{ color: "red" }}>
-          &nbsp;
-        </Grid>
+        <Chip
+          id={"chip-id-empty"}
+          key={"chip-key-empty"}
+          tabIndex={0}
+          onKeyDown={handleKeyPress}
+          onKeyPress={handleKeyPress}
+          label={" "}
+          sx={{ border: "0px solid transparent" }}
+          variant="outlined"
+        />
+        // <Grid item sx={{ color: "red" }}>
+        //   &nbsp;
+        // </Grid>
       );
       return renderOutput;
     }

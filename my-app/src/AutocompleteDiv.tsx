@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { Chip, Grid, List, ListItem } from "@mui/material";
-import React, { Fragment, useEffect, useRef, useState } from "react";
+import { Grid, List, ListItem } from "@mui/material";
+import React, { useState, useEffect, useRef, Fragment } from "react";
 import CaretPositioning from "./EditCaretPositioning";
 import setCaret from "./setCaret";
 
@@ -48,7 +48,7 @@ function AutocompleteDiv({ suggestions }: { suggestions: Array<string> }) {
   const [editable, setEditable] = useState<HTMLElement | null>(null);
   const inputAreaRef = useRef<HTMLDivElement>(null);
   const alllowedOperstions = ["+", "-", "(", ")", "*", "^", "%", "/"];
-  let renderOutput: (string | JSX.Element)[];
+  // let renderOutput: (string | JSX.Element)[];
 
   // let searchTerm: string;
   let savedCaretPosition: {
@@ -164,9 +164,8 @@ function AutocompleteDiv({ suggestions }: { suggestions: Array<string> }) {
     document.getElementById("12357")?.focus();
   }, []);
   useEffect(() => {
-    // setCaret(inputAreaRef, caretPosition);
-    // inputAreaRef.current?.focus();
-    document.getElementById("12357")?.focus();
+    setCaret(inputAreaRef, caretPosition);
+    inputAreaRef.current?.focus();
   }, [inputAreaRef.current?.innerText]);
 
   // Onkeyboard action
@@ -302,36 +301,37 @@ function AutocompleteDiv({ suggestions }: { suggestions: Array<string> }) {
     console.info("You clicked the Chip.");
   };
   const renderUserInput = (input: string) => {
-    // return input;
-    if (input.length !== 0) {
-      renderOutput = input.split(/(\W+)/g).map((value, index) => {
-        if (
-          conformedSuggestion.split(/(\W+)/g).includes(value) &&
-          !alllowedOperstions.includes(value) &&
-          value !== " "
-        ) {
-          // return <Chip key={index} label={value} onClick={handleClick} />;
-          return (
-            <Chip
-              key={index}
-              label={value}
-              onClick={handleClick}
-              variant="outlined"
-            />
-          );
-        } else {
-          return value;
-        }
-      });
-      renderOutput.push(
-        <div id="12357" key="1235">
-          {" "}
-        </div>
-      );
-    } else {
-      return "";
-    }
-    return renderOutput;
+    // setCaret(inputAreaRef, caretPosition);
+    return input;
+    // if (input.length !== 0) {
+    //   renderOutput = input.split(/(\W+)/g).map((value, index) => {
+    //     if (
+    //       conformedSuggestion.split(/(\W+)/g).includes(value) &&
+    //       !alllowedOperstions.includes(value) &&
+    //       value !== " "
+    //     ) {
+    //       // return <Chip key={index} label={value} onClick={handleClick} />;
+    //       return (
+    //         <Chip
+    //           key={index}
+    //           label={value}
+    //           onClick={handleClick}
+    //           variant="outlined"
+    //         />
+    //       );
+    //     } else {
+    //       return value;
+    //     }
+    //   });
+    //   renderOutput.push(
+    //     <div id="12357" key="1235">
+    //       {" "}
+    //     </div>
+    //   );
+    // } else {
+    //   return "";
+    // }
+    // return renderOutput;
   };
 
   const renderSuggestionsList = () => {

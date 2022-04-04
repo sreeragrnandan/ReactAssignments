@@ -1,8 +1,10 @@
-import { List, ListItem, OutlinedInput } from "@mui/material";
-import React, { Fragment, useState } from "react";
+import { List, ListItem } from "@mui/material";
+// import HighlightWithinTextarea from "react-highlight-within-textarea";
 // @ts-ignore
 import { HighlightWithinTextarea } from "react-highlight-within-textarea";
+import React, { Fragment, useState } from "react";
 // import PropTypes from "prop-types";
+import "./styles.css";
 function measureText(
   pText: string | null,
   pFontSize: string,
@@ -35,12 +37,16 @@ function measureText(
   return lResult;
 }
 
-function Autocomplete({ suggestions }: { suggestions: Array<string> }) {
+function AutocompleteHeighLight({
+  suggestions,
+}: {
+  suggestions: Array<string>;
+}) {
   const [activeSuggestion, setActiveSuggestion] = useState<number>(0);
   const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([]);
   const [conformedSuggestion, setConformedSuggestion] = useState<string>("");
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [userInput, setUserInput] = useState<string>("");
+  const [userInput, setUserInput] = useState<string>("abc");
   const [contentWidth, setContentWidth] = useState("0px");
 
   const onClickButton = () => {
@@ -99,7 +105,7 @@ function Autocomplete({ suggestions }: { suggestions: Array<string> }) {
 
   const onKeyDown = (e: { keyCode: number }) => {
     // const { activeSuggestion, filteredSuggestions } = this.state;
-
+    console.log("from keydown");
     // User pressed the enter key
     if (e.keyCode === 13) {
       var val;
@@ -187,6 +193,37 @@ function Autocomplete({ suggestions }: { suggestions: Array<string> }) {
       className: "chip",
     },
   ];
+  const onChange1 = (userInput: string) => setUserInput(userInput);
+
+  const onChange2 = (userText: string) => {
+    console.log(suggestions);
+    const userInp = userText;
+    var inputArray = userInp.split(/\W+/g);
+    console.log("inputArray ", inputArray);
+    var searchTerm = inputArray[inputArray.length - 1];
+
+    if (conformedSuggestion.length > userInp.length) {
+      setConformedSuggestion(userInp);
+      setContentWidth(measureText(userInp, "16", null).width.toString() + "px");
+    }
+
+    // Filter our suggestions that don't contain the user's input
+    const currSuggestions = suggestions.filter(
+      (suggestion) =>
+        suggestion.toLowerCase().indexOf(searchTerm.toLowerCase()) > -1
+    );
+    setActiveSuggestion(0);
+    setFilteredSuggestions(currSuggestions);
+    setShowSuggestions(true);
+    setUserInput(userText);
+    // console.log("Caret at: ", e.target.selectionEnd);
+    var fontSize = "12";
+    // e.target.style.fontSize = fontSize;
+    console.log(
+      "measureText "
+      // measureText(e.target.value, "16", e.target.style).width
+    );
+  };
   return (
     <Fragment>
       {/* <OutlinedInput
@@ -201,12 +238,10 @@ function Autocomplete({ suggestions }: { suggestions: Array<string> }) {
       /> */}
       <HighlightWithinTextarea
         value={userInput}
-        id="inputArea"
-        className="input"
-        onChange={onChange}
-        onKeyDown={onKeyDown}
         highlight={highlight}
-        style={{ overflow: "none" }}
+        onChange={onChange2}
+        contentEditable="true"
+        onKeyDown={onKeyDown}
       />
       {renderSuggestionsList()}
       <button type="button" onClick={onClickButton}>
@@ -216,4 +251,4 @@ function Autocomplete({ suggestions }: { suggestions: Array<string> }) {
   );
 }
 
-export default Autocomplete;
+export default AutocompleteHeighLight;

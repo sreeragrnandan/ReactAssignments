@@ -41,3 +41,13 @@ body {
 .suggestions li:not(:last-of-type) {
   border-bottom: 1px solid #999;
 }
+
+.chip {
+  display: inline-block;
+  padding: 0 5px;
+  height: 25px;
+  font-size: 16px;
+  line-height: 25px;
+  border-radius: 10px;
+  background-color: #f1f1f1;
+}

@@ -2,6 +2,7 @@ import { render } from "react-dom";
 import Autocomplete from "./Autocomplete";
 
 import AutocompleteDiv from "./AutocompleteDiv";
+import AutocompleteHeighLight from "./AutocompleteHighLight";
 
 require("./styles.css");
 
@@ -29,6 +30,22 @@ function App() {
 
       <h1>Auto suggestion</h1>
       <Autocomplete
+        suggestions={[
+          "TotalCurrentRatio",
+          "NetAsset",
+          "IntangibleAssests",
+          "Inventory",
+          "TotalCurrentLiability",
+          "NetPayment",
+          "InvoiceDate",
+          "Solitary",
+          "Tail",
+          "Wetlands",
+        ]}
+      />
+
+      <h1>Auto HighLight</h1>
+      <AutocompleteHeighLight
         suggestions={[
           "TotalCurrentRatio",
           "NetAsset",

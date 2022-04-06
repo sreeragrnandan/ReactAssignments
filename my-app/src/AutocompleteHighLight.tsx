@@ -1,16 +1,16 @@
-import { List, ListItem } from "@mui/material";
+import { Grid, List, ListItem } from "@mui/material";
 // import HighlightWithinTextarea from "react-highlight-within-textarea";
 // @ts-ignore
 import { HighlightWithinTextarea } from "react-highlight-within-textarea";
-import React, { Fragment, useState } from "react";
+import React, { Fragment, useRef, useState } from "react";
 // import PropTypes from "prop-types";
 import "./styles.css";
+import CaretPositioning from "./EditCaretPositioning";
 function measureText(
   pText: string | null,
   pFontSize: string,
   pStyle: CSSStyleDeclaration | null
 ) {
-  console.log("pText ", pText);
   var lDiv = document.createElement("div");
 
   document.body.appendChild(lDiv);
@@ -46,40 +46,29 @@ function AutocompleteHeighLight({
   const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([]);
   const [conformedSuggestion, setConformedSuggestion] = useState<string>("");
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [userInput, setUserInput] = useState<string>("abc");
+  const [userInput, setUserInput] = useState<string>("");
   const [contentWidth, setContentWidth] = useState("0px");
+  const [caretPosition, setCaretPosition] = useState({ start: 0, end: 0 });
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  // const [targetDiv, setTargetDiv] = useState<HTMLElement | null>(null);
+  const inputAreaRef = useRef<HTMLDivElement>(null);
+  const alllowedOperstions = ["+", "-", "(", ")", "*", "^", "%", "/"];
+  console.log(suggestions.join("|"));
+  var re = new RegExp(suggestions.join("|"), "gi");
+  const highlight = [
+    {
+      highlight: re,
+      className: "chip",
+    },
+  ];
+
+  var savedCaretPosition: {
+    start: number;
+    end: number;
+  };
 
   const onClickButton = () => {
     console.log("conformedSuggestionButton: " + userInput);
-  };
-  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(suggestions);
-    const userInp = e.currentTarget.value;
-    var inputArray = userInp.split(/\W+/g);
-    console.log("inputArray ", inputArray);
-    var searchTerm = inputArray[inputArray.length - 1];
-
-    if (conformedSuggestion.length > userInp.length) {
-      setConformedSuggestion(userInp);
-      setContentWidth(measureText(userInp, "16", null).width.toString() + "px");
-    }
-
-    // Filter our suggestions that don't contain the user's input
-    const currSuggestions = suggestions.filter(
-      (suggestion) =>
-        suggestion.toLowerCase().indexOf(searchTerm.toLowerCase()) > -1
-    );
-    setActiveSuggestion(0);
-    setFilteredSuggestions(currSuggestions);
-    setShowSuggestions(true);
-    setUserInput(e.currentTarget.value);
-    console.log("Caret at: ", e.target.selectionEnd);
-    var fontSize = "12";
-    e.target.style.fontSize = fontSize;
-    console.log(
-      "measureText ",
-      measureText(e.target.value, "16", e.target.style).width
-    );
   };
 
   const onClick = (e: { currentTarget: { innerText: string } }) => {
@@ -99,53 +88,12 @@ function AutocompleteHeighLight({
     setContentWidth(
       (measureText(userInput, "16", null).width + 8).toString() + "px"
     );
-    console.log("conformedSuggestion: " + conformedSuggestion);
-    console.log("user input: " + userInput);
-  };
-
-  const onKeyDown = (e: { keyCode: number }) => {
-    // const { activeSuggestion, filteredSuggestions } = this.state;
-    console.log("from keydown");
-    // User pressed the enter key
-    if (e.keyCode === 13) {
-      var val;
-      if (conformedSuggestion.length === 0) {
-        val = "";
-      } else {
-        val = conformedSuggestion + " ";
-      }
-      var value = val + filteredSuggestions[activeSuggestion];
-      setConformedSuggestion(val + filteredSuggestions[activeSuggestion]);
-      setActiveSuggestion(0);
-      setShowSuggestions(false);
-      setUserInput(value);
-      setContentWidth(
-        (measureText(value, "16", null).width + 8).toString() + "px"
-      );
-      console.log("conformedSuggestion: " + conformedSuggestion);
-    }
-    // User pressed the up arrow
-    else if (e.keyCode === 38) {
-      if (activeSuggestion === 0) {
-        return;
-      }
-
-      setActiveSuggestion(activeSuggestion - 1);
-    }
-    // User pressed the down arrow
-    else if (e.keyCode === 40) {
-      if (activeSuggestion - 1 === filteredSuggestions.length) {
-        return;
-      }
-      setActiveSuggestion(activeSuggestion + 1);
-    }
   };
 
   const renderSuggestionsList = () => {
     let suggestionsListComponent;
 
     if (showSuggestions && userInput) {
-      console.log("userInput", userInput);
       if (filteredSuggestions.length) {
         suggestionsListComponent = (
           <List className="suggestions" style={{ marginLeft: contentWidth }}>
@@ -179,70 +127,176 @@ function AutocompleteHeighLight({
     }
     return suggestionsListComponent;
   };
-  const highlight = [
-    {
-      highlight: "TotalCurrentRatio",
-      className: "chip",
-    },
-    {
-      highlight: "blueberry",
-      className: "chip",
-    },
-    {
-      highlight: /ba(na)*/gi,
-      className: "chip",
-    },
-  ];
-  const onChange1 = (userInput: string) => setUserInput(userInput);
 
-  const onChange2 = (userText: string) => {
-    console.log(suggestions);
-    const userInp = userText;
-    var inputArray = userInp.split(/\W+/g);
-    console.log("inputArray ", inputArray);
-    var searchTerm = inputArray[inputArray.length - 1];
+  const onChangeHandler = (userText: string) => {
+    console.log("userText: ", userText);
+    if (inputAreaRef.current) {
+      savedCaretPosition = CaretPositioning.saveSelection(inputAreaRef.current);
+      setCaretPosition(savedCaretPosition);
 
-    if (conformedSuggestion.length > userInp.length) {
-      setConformedSuggestion(userInp);
-      setContentWidth(measureText(userInp, "16", null).width.toString() + "px");
+      const userInp = userText;
+
+      // const userInp = inputAreaRef.current.innerText;
+      const searchArea = userInp.slice(0, savedCaretPosition.end + 1);
+
+      // For operators
+      if (
+        alllowedOperstions.includes(searchArea[searchArea.length - 1]) &&
+        searchArea[searchArea.length - 1] !==
+          conformedSuggestion[savedCaretPosition.end - 1]
+      ) {
+        setShowSuggestions(false);
+        savedCaretPosition = CaretPositioning.saveSelection(
+          inputAreaRef.current
+        );
+        setConformedSuggestion(userText);
+        setCaretPosition(savedCaretPosition);
+        setContentWidth(
+          (measureText(userText, "16", null).width + 8).toString() + "px"
+        );
+        setUserInput(userText);
+      } else {
+        var inputArray = searchArea.split(/(\W+)/g);
+        var srhTerm: string;
+        console.log(inputArray);
+        setSearchTerm(inputArray[inputArray.length - 1]);
+        srhTerm = inputArray[inputArray.length - 1];
+
+        // If user delets characters from input
+        if (conformedSuggestion.length > userInp.length) {
+          if (
+            !suggestions.includes(srhTerm) &&
+            !alllowedOperstions.includes(searchTerm)
+          ) {
+            setConformedSuggestion(userInp.replace(srhTerm, ""));
+          } else {
+            setConformedSuggestion(userInp);
+          }
+          setContentWidth(
+            measureText(userInp, "16", null).width.toString() + "px"
+          );
+        }
+
+        //If cursour moved to the left
+        if (conformedSuggestion.length > searchArea.length) {
+          setContentWidth(
+            measureText(searchArea, "16", null).width.toString() + "px"
+          );
+        }
+        // Filter our suggestions that don't contain the user's input
+        const currSuggestions = suggestions.filter(
+          (suggestion) =>
+            suggestion.toLowerCase().indexOf(srhTerm.toLowerCase()) > -1
+        );
+        setActiveSuggestion(0);
+        setFilteredSuggestions(currSuggestions);
+        if (srhTerm.length >= 3) {
+          setShowSuggestions(true);
+        } else {
+          setShowSuggestions(false);
+        }
+        setUserInput(userText);
+      }
     }
-
-    // Filter our suggestions that don't contain the user's input
-    const currSuggestions = suggestions.filter(
-      (suggestion) =>
-        suggestion.toLowerCase().indexOf(searchTerm.toLowerCase()) > -1
-    );
-    setActiveSuggestion(0);
-    setFilteredSuggestions(currSuggestions);
-    setShowSuggestions(true);
-    setUserInput(userText);
-    // console.log("Caret at: ", e.target.selectionEnd);
-    var fontSize = "12";
-    // e.target.style.fontSize = fontSize;
-    console.log(
-      "measureText "
-      // measureText(e.target.value, "16", e.target.style).width
-    );
   };
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    var value;
+    e = e || window.event;
+
+    savedCaretPosition = CaretPositioning.saveSelection(e.currentTarget);
+
+    // User pressed the enter key
+    if (e.key === "Escape") {
+      if (showSuggestions) {
+        setShowSuggestions(false);
+      } else if (!showSuggestions) {
+        inputAreaRef.current?.blur();
+      }
+    }
+    if (e.key === "Enter" && userInput.length > 0) {
+      e.preventDefault();
+      var val;
+      if (conformedSuggestion.length === 0) {
+        val = "";
+      } else {
+        val = conformedSuggestion;
+      }
+      if (
+        conformedSuggestion.length > savedCaretPosition.end &&
+        conformedSuggestion.length > 0
+      ) {
+        value =
+          conformedSuggestion.slice(
+            0,
+            savedCaretPosition.end - searchTerm.length
+          ) +
+          filteredSuggestions[activeSuggestion] +
+          conformedSuggestion.slice(savedCaretPosition.end - searchTerm.length);
+      } else {
+        value = val + filteredSuggestions[activeSuggestion];
+      }
+      savedCaretPosition.end =
+        savedCaretPosition.end +
+        (filteredSuggestions[activeSuggestion].length - searchTerm.length);
+      if (savedCaretPosition.end > value.length) {
+        savedCaretPosition.end = value.length;
+      }
+      // value = val + filteredSuggestions[activeSuggestion];
+      setCaretPosition(savedCaretPosition);
+      setConformedSuggestion(value);
+      setActiveSuggestion(0);
+      setShowSuggestions(false);
+      setUserInput(value);
+      setContentWidth(
+        (measureText(value, "16", null).width + 8).toString() + "px"
+      );
+      setSearchTerm("");
+    }
+    // User pressed the up arrow
+    else if (e.key === "ArrowUp") {
+      if (showSuggestions) {
+        e.preventDefault();
+      }
+      if (activeSuggestion === 0) {
+        setShowSuggestions(false);
+        return;
+      }
+      setActiveSuggestion(activeSuggestion - 1);
+    }
+    // User pressed the down arrow
+    else if (e.key === "ArrowDown") {
+      if (showSuggestions) {
+        e.preventDefault();
+      }
+      if (activeSuggestion - 1 === filteredSuggestions.length) {
+        return;
+      }
+      setActiveSuggestion(activeSuggestion + 1);
+    }
+    setCaretPosition(savedCaretPosition);
+  };
+
   return (
     <Fragment>
-      {/* <OutlinedInput
-        type="text"
-        onChange={onChange}
-        onKeyDown={onKeyDown}
-        value={userInput}
+      <Grid
+        tabIndex={0}
+        ref={inputAreaRef}
         id="inputArea"
-        placeholder="Please enter formula"
-        contentEditable="true"
+        onKeyDown={handleKeyPress}
         className="input"
-      /> */}
-      <HighlightWithinTextarea
-        value={userInput}
-        highlight={highlight}
-        onChange={onChange2}
-        contentEditable="true"
-        onKeyDown={onKeyDown}
-      />
+      >
+        <HighlightWithinTextarea
+          value={userInput}
+          type="text"
+          placeholder={""}
+          // id="inputArea"
+          highlight={highlight}
+          onChange={onChangeHandler}
+          contentEditable={"true"}
+          autofocus
+          className={"chipDisplay"}
+        />
+      </Grid>
       {renderSuggestionsList()}
       <button type="button" onClick={onClickButton}>
         Submit

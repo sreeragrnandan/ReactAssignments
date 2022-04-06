@@ -9,7 +9,7 @@ require("./styles.css");
 function App() {
   return (
     <div>
-      <h1>Auto suggestion Div</h1>
+      {/* <h1>Auto suggestion Div</h1>
       <AutocompleteDiv
         suggestions={[
           "a",
@@ -42,7 +42,7 @@ function App() {
           "Tail",
           "Wetlands",
         ]}
-      />
+      /> */}
 
       <h1>Auto HighLight</h1>
       <AutocompleteHeighLight

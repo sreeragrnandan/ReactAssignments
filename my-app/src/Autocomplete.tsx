@@ -8,7 +8,6 @@ function measureText(
   pFontSize: string,
   pStyle: CSSStyleDeclaration | null
 ) {
-  console.log("pText ", pText);
   var lDiv = document.createElement("div");
 
   document.body.appendChild(lDiv);
@@ -47,10 +46,8 @@ function Autocomplete({ suggestions }: { suggestions: Array<string> }) {
     console.log("conformedSuggestionButton: " + userInput);
   };
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(suggestions);
     const userInp = e.currentTarget.value;
     var inputArray = userInp.split(/\W+/g);
-    console.log("inputArray ", inputArray);
     var searchTerm = inputArray[inputArray.length - 1];
 
     if (conformedSuggestion.length > userInp.length) {
@@ -67,13 +64,8 @@ function Autocomplete({ suggestions }: { suggestions: Array<string> }) {
     setFilteredSuggestions(currSuggestions);
     setShowSuggestions(true);
     setUserInput(e.currentTarget.value);
-    console.log("Caret at: ", e.target.selectionEnd);
     var fontSize = "12";
     e.target.style.fontSize = fontSize;
-    console.log(
-      "measureText ",
-      measureText(e.target.value, "16", e.target.style).width
-    );
   };
 
   const onClick = (e: { currentTarget: { innerText: string } }) => {
@@ -93,8 +85,6 @@ function Autocomplete({ suggestions }: { suggestions: Array<string> }) {
     setContentWidth(
       (measureText(userInput, "16", null).width + 8).toString() + "px"
     );
-    console.log("conformedSuggestion: " + conformedSuggestion);
-    console.log("user input: " + userInput);
   };
 
   const onKeyDown = (e: { keyCode: number }) => {
@@ -116,7 +106,6 @@ function Autocomplete({ suggestions }: { suggestions: Array<string> }) {
       setContentWidth(
         (measureText(value, "16", null).width + 8).toString() + "px"
       );
-      console.log("conformedSuggestion: " + conformedSuggestion);
     }
     // User pressed the up arrow
     else if (e.keyCode === 38) {
@@ -139,7 +128,6 @@ function Autocomplete({ suggestions }: { suggestions: Array<string> }) {
     let suggestionsListComponent;
 
     if (showSuggestions && userInput) {
-      console.log("userInput", userInput);
       if (filteredSuggestions.length) {
         suggestionsListComponent = (
           <List className="suggestions" style={{ marginLeft: contentWidth }}>

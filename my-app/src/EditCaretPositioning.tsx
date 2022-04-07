@@ -25,13 +25,6 @@ if (window.getSelection && document.createRange) {
       end: number;
     }
   ) {
-    console.log(
-      "From restoreSelection",
-      "containerEl ",
-      containerEl,
-      "savedSel ",
-      savedSel
-    );
     var charIndex = 0,
       range = document.createRange();
     range.setStart(containerEl, 0);

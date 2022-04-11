@@ -7,14 +7,16 @@ import React, { Fragment, useRef, useState } from "react";
 import "./styles.css";
 import CaretPositioning from "./EditCaretPositioning";
 import { measureText } from "./measeureTextWidth";
+import { Suggestion } from "./types";
 
-function AutocompleteHeighLight({
-  suggestions,
-}: {
-  suggestions: Array<string>;
-}) {
+function SuggestWithObject({ suggestions }: { suggestions: Suggestion }) {
   const [activeSuggestion, setActiveSuggestion] = useState<number>(0);
-  const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([]);
+  const [filteredSuggestionsList, setFilteredSuggestionsList] = useState<
+    string[][]
+  >([]);
+  const [conformedSuggestionList, setConformedSuggestionList] = useState<
+    string[][]
+  >([]);
   const [conformedSuggestion, setConformedSuggestion] = useState<string>("");
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [userInput, setUserInput] = useState<string>("");
@@ -24,7 +26,12 @@ function AutocompleteHeighLight({
   // const [targetDiv, setTargetDiv] = useState<HTMLElement | null>(null);
   const inputAreaRef = useRef<HTMLDivElement>(null);
   const alllowedOperstions = ["+", "-", "(", ")", "*", "^", "%", "/"];
-  var re = new RegExp(suggestions.join("|"), "gi");
+  const reStr = Object.values(suggestions)
+    .map(function (suggestion) {
+      return suggestion;
+    })
+    .join("|");
+  var re = new RegExp(reStr, "gi");
   const highlight = [
     {
       highlight: re,
@@ -38,10 +45,12 @@ function AutocompleteHeighLight({
   };
 
   const onClickButton = () => {
-    console.log("conformedSuggestionButton: " + userInput);
+    console.log("conformedSuggestionButton: " + conformedSuggestion);
+    console.log("conformedSuggestionList: ", conformedSuggestionList);
+    console.log("userInput: " + userInput);
   };
 
-  const onClick = (e: { currentTarget: { innerText: string } }) => {
+  const onClick = (e: React.MouseEvent<HTMLElement>) => {
     var val;
     var value;
     const savedCaretPosition = caretPosition;
@@ -66,11 +75,13 @@ function AutocompleteHeighLight({
     }
     savedCaretPosition.end =
       savedCaretPosition.end +
-      (filteredSuggestions[activeSuggestion].length - searchTerm.length);
+      (filteredSuggestionsList[activeSuggestion][1].length - searchTerm.length);
     if (savedCaretPosition.end > value.length) {
       savedCaretPosition.end = value.length;
     }
     // value = val + filteredSuggestions[activeSuggestion];
+    const target = e.target as HTMLLIElement;
+    console.log(target.id, "target ", target.value);
     setCaretPosition(savedCaretPosition);
     setConformedSuggestion(value);
     setActiveSuggestion(0);
@@ -86,10 +97,10 @@ function AutocompleteHeighLight({
     let suggestionsListComponent;
 
     if (showSuggestions && userInput) {
-      if (filteredSuggestions.length) {
+      if (filteredSuggestionsList.length) {
         suggestionsListComponent = (
           <List className="suggestions" style={{ marginLeft: contentWidth }}>
-            {filteredSuggestions.map((suggestion, index) => {
+            {filteredSuggestionsList.map((suggestion, index) => {
               let className;
 
               // Flag the active suggestion with a class
@@ -100,10 +111,11 @@ function AutocompleteHeighLight({
               return (
                 <ListItem
                   className={className}
-                  key={suggestion}
+                  key={suggestion[0]}
+                  id={suggestion[0]}
                   onClick={onClick}
                 >
-                  {suggestion}
+                  {suggestion[1]}
                 </ListItem>
               );
             })}
@@ -145,19 +157,37 @@ function AutocompleteHeighLight({
         setContentWidth(
           (measureText(userText, "16", null).width + 8).toString() + "px"
         );
+        const inputArray = searchArea.split(/(?!\.)(\W+)/g);
+        const cList = [
+          ...conformedSuggestionList.slice(0, inputArray.length),
+          [
+            searchArea[searchArea.length - 1],
+            searchArea[searchArea.length - 1],
+          ],
+          ...conformedSuggestionList.slice(
+            inputArray.length,
+            conformedSuggestionList.length
+          ),
+        ];
+        if (cList.length > userInp.length) {
+          // const present = Object.values(suggestions).includes(srhTerm);
+          cList.splice(inputArray.length, 1);
+        }
+        setConformedSuggestionList(cList);
         setUserInput(userText);
       } else {
-        var inputArray = searchArea.split(/(\W+)/g);
+        var inputArray = searchArea.split(/(?!\.)(\W+)/g);
         var srhTerm: string;
         setSearchTerm(inputArray[inputArray.length - 1]);
         srhTerm = inputArray[inputArray.length - 1];
 
-        // If user delets characters from input
+        // If user deletes characters from input
         if (conformedSuggestion.length > userInp.length) {
-          if (
-            !suggestions.includes(srhTerm) &&
-            !alllowedOperstions.includes(searchTerm)
-          ) {
+          const present = Object.values(suggestions).includes(srhTerm);
+          setConformedSuggestionList((prev) =>
+            prev.splice(inputArray.length - 1, 1)
+          );
+          if (!present && !alllowedOperstions.includes(srhTerm)) {
             setConformedSuggestion(userInp.replace(srhTerm, ""));
           } else {
             setConformedSuggestion(userInp);
@@ -174,12 +204,14 @@ function AutocompleteHeighLight({
           );
         }
         // Filter our suggestions that don't contain the user's input
-        const currSuggestions = suggestions.filter(
-          (suggestion) =>
-            suggestion.toLowerCase().indexOf(srhTerm.toLowerCase()) > -1
-        );
+
+        var currSuggestions: [string, string][];
+        currSuggestions = Object.entries(suggestions).filter((value) => {
+          return value[1].toLowerCase().indexOf(srhTerm.toLowerCase()) > -1;
+        });
+
         setActiveSuggestion(0);
-        setFilteredSuggestions(currSuggestions);
+        setFilteredSuggestionsList(currSuggestions);
         if (srhTerm.length >= 3) {
           setShowSuggestions(true);
         } else {
@@ -220,18 +252,26 @@ function AutocompleteHeighLight({
             0,
             savedCaretPosition.end - searchTerm.length
           ) +
-          filteredSuggestions[activeSuggestion] +
+          filteredSuggestionsList[activeSuggestion][1] +
           conformedSuggestion.slice(savedCaretPosition.end - searchTerm.length);
       } else {
-        value = val + filteredSuggestions[activeSuggestion];
+        value = val + filteredSuggestionsList[activeSuggestion][1];
       }
       savedCaretPosition.end =
         savedCaretPosition.end +
-        (filteredSuggestions[activeSuggestion].length - searchTerm.length);
+        (filteredSuggestionsList[activeSuggestion][1].length -
+          searchTerm.length);
       if (savedCaretPosition.end > value.length) {
         savedCaretPosition.end = value.length;
       }
-      // value = val + filteredSuggestions[activeSuggestion];
+      console.log("conformed suggestion ", value);
+      const inpArray = userInput.slice(0, savedCaretPosition.end + 1);
+      setConformedSuggestionList((prevVal) => [
+        ...prevVal.slice(0, inpArray.length),
+        filteredSuggestionsList[activeSuggestion],
+        ...prevVal.slice(inpArray.length, prevVal.length),
+      ]);
+      console.log("conformed suggestion code", conformedSuggestionList);
       setCaretPosition(savedCaretPosition);
       setConformedSuggestion(value);
       setActiveSuggestion(0);
@@ -258,7 +298,7 @@ function AutocompleteHeighLight({
       if (showSuggestions) {
         e.preventDefault();
       }
-      if (activeSuggestion - 1 === filteredSuggestions.length) {
+      if (activeSuggestion - 1 === filteredSuggestionsList.length) {
         return;
       }
       setActiveSuggestion(activeSuggestion + 1);
@@ -274,6 +314,7 @@ function AutocompleteHeighLight({
         id="inputArea"
         onKeyDown={handleKeyPress}
         className="input"
+        // contentEditable={"true"}
       >
         <HighlightWithinTextarea
           value={userInput}
@@ -294,4 +335,4 @@ function AutocompleteHeighLight({
   );
 }
 
-export default AutocompleteHeighLight;
+export default SuggestWithObject;

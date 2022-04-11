@@ -8,6 +8,7 @@ import "./styles.css";
 import CaretPositioning from "./EditCaretPositioning";
 import { measureText } from "./measeureTextWidth";
 import { Suggestion } from "./types";
+import { constructExp } from "./mapElement";
 
 function SuggestWithObject({ suggestions }: { suggestions: Suggestion }) {
   const [activeSuggestion, setActiveSuggestion] = useState<number>(0);
@@ -25,8 +26,19 @@ function SuggestWithObject({ suggestions }: { suggestions: Suggestion }) {
   const [searchTerm, setSearchTerm] = useState<string>("");
   // const [targetDiv, setTargetDiv] = useState<HTMLElement | null>(null);
   const inputAreaRef = useRef<HTMLDivElement>(null);
-  const alllowedOperstions = ["+", "-", "(", ")", "*", "^", "%", "/"];
-  const reStr = Object.values(suggestions)
+  const alllowedOperstions: Suggestion = {
+    "+": "+",
+    "-": "-",
+    "(": "(",
+    ")": ")",
+    "*": "*",
+    "^": "^",
+    "%": "%",
+    "/": "/",
+    abs: "|",
+    PY: "$",
+  };
+  const reStr = Object.keys(suggestions)
     .map(function (suggestion) {
       return suggestion;
     })
@@ -48,6 +60,7 @@ function SuggestWithObject({ suggestions }: { suggestions: Suggestion }) {
     console.log("conformedSuggestionButton: " + conformedSuggestion);
     console.log("conformedSuggestionList: ", conformedSuggestionList);
     console.log("userInput: " + userInput);
+    console.log(constructExp(userInput, suggestions, alllowedOperstions));
   };
 
   const onClick = (e: React.MouseEvent<HTMLElement>) => {
@@ -111,11 +124,11 @@ function SuggestWithObject({ suggestions }: { suggestions: Suggestion }) {
               return (
                 <ListItem
                   className={className}
-                  key={suggestion[0]}
-                  id={suggestion[0]}
+                  key={suggestion[1]}
+                  id={suggestion[1]}
                   onClick={onClick}
                 >
-                  {suggestion[1]}
+                  {suggestion[0]}
                 </ListItem>
               );
             })}
@@ -144,7 +157,7 @@ function SuggestWithObject({ suggestions }: { suggestions: Suggestion }) {
 
       // For operators
       if (
-        alllowedOperstions.includes(searchArea[searchArea.length - 1]) &&
+        alllowedOperstions[searchArea[searchArea.length - 1]] !== undefined &&
         searchArea[searchArea.length - 1] !==
           conformedSuggestion[savedCaretPosition.end - 1]
       ) {
@@ -183,11 +196,13 @@ function SuggestWithObject({ suggestions }: { suggestions: Suggestion }) {
 
         // If user deletes characters from input
         if (conformedSuggestion.length > userInp.length) {
-          const present = Object.values(suggestions).includes(srhTerm);
+          // const present = Object.values(suggestions).includes(srhTerm);
+          const present = suggestions[srhTerm] !== undefined;
+
           setConformedSuggestionList((prev) =>
             prev.splice(inputArray.length - 1, 1)
           );
-          if (!present && !alllowedOperstions.includes(srhTerm)) {
+          if (!present && alllowedOperstions[srhTerm] === undefined) {
             setConformedSuggestion(userInp.replace(srhTerm, ""));
           } else {
             setConformedSuggestion(userInp);
@@ -207,7 +222,7 @@ function SuggestWithObject({ suggestions }: { suggestions: Suggestion }) {
 
         var currSuggestions: [string, string][];
         currSuggestions = Object.entries(suggestions).filter((value) => {
-          return value[1].toLowerCase().indexOf(srhTerm.toLowerCase()) > -1;
+          return value[0].toLowerCase().indexOf(srhTerm.toLowerCase()) > -1;
         });
 
         setActiveSuggestion(0);
@@ -252,14 +267,14 @@ function SuggestWithObject({ suggestions }: { suggestions: Suggestion }) {
             0,
             savedCaretPosition.end - searchTerm.length
           ) +
-          filteredSuggestionsList[activeSuggestion][1] +
+          filteredSuggestionsList[activeSuggestion][0] +
           conformedSuggestion.slice(savedCaretPosition.end - searchTerm.length);
       } else {
-        value = val + filteredSuggestionsList[activeSuggestion][1];
+        value = val + filteredSuggestionsList[activeSuggestion][0];
       }
       savedCaretPosition.end =
         savedCaretPosition.end +
-        (filteredSuggestionsList[activeSuggestion][1].length -
+        (filteredSuggestionsList[activeSuggestion][0].length -
           searchTerm.length);
       if (savedCaretPosition.end > value.length) {
         savedCaretPosition.end = value.length;
@@ -305,7 +320,11 @@ function SuggestWithObject({ suggestions }: { suggestions: Suggestion }) {
     }
     setCaretPosition(savedCaretPosition);
   };
-
+  const handleOnClick = (e: any) => {
+    console.log("caretPosition");
+    savedCaretPosition = CaretPositioning.saveSelection(inputAreaRef.current);
+    setCaretPosition(savedCaretPosition);
+  };
   return (
     <Fragment>
       <Grid
@@ -314,6 +333,7 @@ function SuggestWithObject({ suggestions }: { suggestions: Suggestion }) {
         id="inputArea"
         onKeyDown={handleKeyPress}
         className="input"
+        onClick={handleOnClick}
         // contentEditable={"true"}
       >
         <HighlightWithinTextarea

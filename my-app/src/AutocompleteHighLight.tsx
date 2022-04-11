@@ -112,7 +112,7 @@ function AutocompleteHeighLight({
       } else {
         suggestionsListComponent = (
           <div className="no-suggestions">
-            <em>No suggestions, you're on your own!</em>
+            <em>labal not found, please check your input</em>
           </div>
         );
       }

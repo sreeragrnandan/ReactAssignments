@@ -11,14 +11,14 @@ function App() {
       <h1>Object HighLight</h1>
       <SuggestWithObject
         suggestions={{
-          "bs.123": "bs.TotalCurrentRatio",
-          "pnl.321": "pnl.NetAsset",
-          "bs.231": "bs.IntangibleAssests",
-          "pnl.231": "pnl.Inventory",
-          "bs.789": "bs.TotalCurrentLiability",
-          "pnl.456": "pnl.NetPayment",
-          "bs.147": "bs.InvoiceDate",
-          "pnl.963": "pnl.Solitary",
+          "bs.TotalCurrentRatio": "bs.123",
+          "pnl.NetAsset": "pnl.321",
+          "bs.IntangibleAssests": "bs.231",
+          "pnl.Inventory": "pnl.231",
+          "bs.TotalCurrentLiability": "bs.789",
+          "pnl.NetPayment": "pnl.456",
+          "bs.InvoiceDate": "bs.147",
+          "pnl.Solitary": "pnl.963",
         }}
       />
     </div>
